@@ -11,7 +11,7 @@ services:
       - 80:80
     depends_on:
       - backend
-      - vue-app
+      - frontend
       - image-server
       - mxdb-server
       - mxdb-streaming
@@ -32,7 +32,7 @@ services:
       - 8000:8000
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./heidi/build/backend/stable:/opt/app
+      - ./backend/app:/opt/app
       - /usr/local/mxlibs3:/sls/MX/applications/mxlibs3/all-beamlines/stable
       - /usr/local/mxdbclient:/sls/MX/applications/mxdbclient/all-beamlines/stable
     networks:
@@ -41,7 +41,7 @@ services:
   image-server:
     container_name: image-server
     build:
-      context: ./mxims
+      context: ./image-server
       dockerfile: Dockerfile
     restart: always
     ports:
@@ -70,7 +70,7 @@ services:
   mxdb-streaming:
     container_name: mxdb-streaming
     build:
-      context: ./mxdb-live-stream
+      context: ./mxdb-streaming
       dockerfile: Dockerfile
     restart: always
     ports: 
@@ -80,10 +80,10 @@ services:
     networks:
       - my-network
 
-  vue-app:
-    container_name: vue-app
+  frontend:
+    container_name: frontend
     build:
-      context: ./heidi
+      context: ./frontend
       dockerfile: Dockerfile
     restart: always
     ports:
