@@ -1,0 +1,101 @@
+version: '3'
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 443:443
+      - 80:80
+    depends_on:
+      - backend
+      - vue-app
+      - image-server
+      - mxdb-server
+      - mxdb-streaming
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./nginx/config:/etc/nginx/conf.d
+      - /etc/certificates:/etc/certificates
+    networks:
+      - my-network
+
+  backend:
+    container_name: backend
+    build:
+      context: ./heidi/build
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./heidi/build/backend/stable:/opt/app
+      - /usr/local/mxlibs3:/sls/MX/applications/mxlibs3/all-beamlines/stable
+      - /usr/local/mxdbclient:/sls/MX/applications/mxdbclient/all-beamlines/stable
+    networks:
+      - my-network
+
+  image-server:
+    container_name: image-server
+    build:
+      context: ./mxims
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8443:8443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /sls/MX/applications/heidi/image_db:/images:ro
+    networks:
+      - my-network
+
+  mxdb-server:
+    container_name: mxdb-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8080:5000
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - my-network
+
+  mxdb-streaming:
+    container_name: mxdb-streaming
+    build:
+      context: ./mxdb-live-stream
+      dockerfile: Dockerfile
+    restart: always
+    ports: 
+      - 8008:8008
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - my-network
+
+  vue-app:
+    container_name: vue-app
+    build:
+      context: ./heidi
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 5000:5000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - backend
+      - image-server
+      - mxdb-streaming
+    networks:
+      - my-network
+
+networks:
+  my-network:
