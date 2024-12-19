@@ -1,15 +1,14 @@
-# Base image with Nginx installed
 FROM nginx:latest
 
-# Remove default Nginx configurations
-# RUN rm /etc/nginx/conf.d/default.conf
+# Install gettext-base for envsubst
+RUN apt-get update && apt-get install -y gettext-base && apt-get clean
 
-# Copy custom Nginx configuration
-COPY config/nginx.conf /etc/nginx/conf.d/
+# Copy over default NGINX configurations (optional, adjust paths as needed)
+COPY ./config/nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Expose port 80
-EXPOSE 80
+# Set entrypoint script
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
-
+# Set default command
+ENTRYPOINT ["/entrypoint.sh"]

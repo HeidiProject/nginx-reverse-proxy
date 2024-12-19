@@ -5,6 +5,9 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    environment:
+      # all available envs are heidi, heidi-test and heidi-sfx
+      - SERVER=${SERVER:-heidi} # Default to 'heidi' if SERVER is not set
     restart: always
     ports:
       - 443:443
@@ -13,19 +16,20 @@ services:
       - backend
       - frontend
       - image-server
-      - mxdb-server
       - mxdb-streaming
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./nginx/config:/etc/nginx/conf.d
+      # - ./nginx/config:/etc/nginx/conf.d
       - /etc/certificates:/etc/certificates
+      - ./nginx/config/nginx.conf.template:/etc/nginx/nginx.conf.template
     networks:
       - my-network
 
   backend:
     container_name: backend
+    image: docker.psi.ch:5000/heidi/backend:${VERSION}
     build:
-      context: ./heidi/build
+      context: ./backend
       dockerfile: Dockerfile
     restart: always
     ports:
@@ -33,6 +37,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./backend/app:/opt/app
+      - /etc/mxsecrets.conf:/opt/app/config.yaml
       - /usr/local/mxlibs3:/sls/MX/applications/mxlibs3/all-beamlines/stable
       - /usr/local/mxdbclient:/sls/MX/applications/mxdbclient/all-beamlines/stable
     networks:
@@ -40,31 +45,17 @@ services:
 
   image-server:
     container_name: image-server
+    image: docker.psi.ch:5000/heidi/image-server:${VERSION}
     build:
       context: ./image-server
       dockerfile: Dockerfile
     restart: always
     ports:
-      - 8443:8443
+      - 8003:8003
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /sls/MX/applications/heidi/image_db:/images:ro
-    networks:
-      - my-network
-
-  mxdb-server:
-    container_name: mxdb-server
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - 8080:5000
-    environment:
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    networks:
+    networks:  # Correct indentation here
       - my-network
 
   mxdb-streaming:
@@ -77,14 +68,19 @@ services:
       - 8008:8008
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - /etc/certificates:/etc/certificates:ro
     networks:
       - my-network
 
   frontend:
     container_name: frontend
+    image: docker.psi.ch:5000/heidi/frontend:${VERSION}${SERVER}
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # all available envs are heidi, heidi-test and heidi-sfx
+        - SERVER=${SERVER:-heidi}  
     restart: always
     ports:
       - 5000:5000
