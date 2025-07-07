@@ -151,3 +151,4 @@ location /auth/api/events {
 **`proxy_read_timeout`** and **`proxy_send_timeout`**: These directives set the read and send timeouts to a long duration (2 hours in this example) to accommodate long-running SSE streams.
 
 With these configurations, NGINX should proxy the request to the backend and handle the SSE response correctly, allowing you to stream server-sent events from the backend through NGINX to the client.
+
