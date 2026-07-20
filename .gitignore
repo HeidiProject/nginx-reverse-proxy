@@ -3,3 +3,9 @@ backend/
 mxdb-server/
 mxdb-streaming/
 image-server/
+
+
+nginx/config/old_nginx.conf
+nginx/pip.conf
+
+
