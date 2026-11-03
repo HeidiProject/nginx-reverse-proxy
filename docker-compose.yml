@@ -2,6 +2,7 @@ version: '3'
 services:
   nginx:
     container_name: nginx
+    image: docker.psi.ch:5000/heidi/nginx:${VERSION}-${SERVER:-heidi}
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -32,6 +33,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: always
+    environment:
+      - SFXDB_BASE_URL=${SFXDB_BASE_URL:?SFXDB_BASE_URL must be configured}
     ports:
       - 8000:8000
     volumes:
@@ -60,6 +63,7 @@ services:
 
   mxdb-streaming:
     container_name: mxdb-streaming
+    image: docker.psi.ch:5000/heidi/mxdb-streaming:${VERSION}
     build:
       context: ./mxdb-streaming
       dockerfile: Dockerfile
@@ -74,7 +78,7 @@ services:
 
   frontend:
     container_name: frontend
-    image: docker.psi.ch:5000/heidi/frontend:${VERSION}${SERVER}
+    image: docker.psi.ch:5000/heidi/frontend:${VERSION}-${SERVER:-heidi}
     build:
       context: ./frontend
       dockerfile: Dockerfile

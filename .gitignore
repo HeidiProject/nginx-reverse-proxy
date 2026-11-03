@@ -9,3 +9,8 @@ nginx/config/old_nginx.conf
 nginx/pip.conf
 
 
+# Host-specific Docker Compose environment
+.env
+.env.*
+!.env.example
+
